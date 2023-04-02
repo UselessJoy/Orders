@@ -13,10 +13,6 @@ namespace Orders.Model
 
         public DbSet<Product> Products { get; set; }
 
-       /* protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Order>().HasKey(order => new { order.Id, order.ClientId });
-        }*/
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             IConfigurationRoot configuration = new ConfigurationBuilder().

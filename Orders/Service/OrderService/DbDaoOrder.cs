@@ -24,6 +24,7 @@ namespace Orders.Service.OrderService
             Order? order = await db.Orders.FirstOrDefaultAsync((order) => order.Id == id);
             if (order != null)
             {
+                //Для orderProduct уже используется каскадное удаление при удалении order
                 db.Orders.Remove(order);
                 await db.SaveChangesAsync();
             }
