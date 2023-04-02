@@ -24,8 +24,17 @@ namespace Orders.Service.OrderClientServie
             OrderProduct? orderProduct = await db.OrdersProducts.FirstOrDefaultAsync((orderProduct) => orderProduct.Id == id);
             if (orderProduct != null)
             {
+                //Взять заказ, чей order product будет удален
+                var orderId = orderProduct.OrderId;
                 db.OrdersProducts.Remove(orderProduct);
                 await db.SaveChangesAsync();
+                //Если в таблице orders у данного order больше нет orderProduct, то удалить и данный order
+                Order? order = await db.Orders.FirstOrDefaultAsync((o) => o.Id == orderId);
+                if (order.OrderProduct == null)
+                {
+                    db.Orders.Remove(order);
+                    await db.SaveChangesAsync();
+                }
             }
             return orderProduct != null;
         }
