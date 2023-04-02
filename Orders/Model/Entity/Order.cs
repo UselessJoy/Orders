@@ -13,7 +13,7 @@ namespace Orders.Model.Entity
 
         public Client? Client { get; set; }
 
-        public OrderProduct? OrderProduct { get; set; }
+        public ICollection<OrderProduct>? OrderProduct { get; set; }
 
         public Order()
         {

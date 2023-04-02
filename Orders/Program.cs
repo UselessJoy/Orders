@@ -46,7 +46,7 @@ app.MapPost("/client/update", async (IDaoClient dao, Client client) =>
     return await dao.UpdateClient(client);
 });
 
-app.MapGet("/client/get", async (HttpContext context, IDaoClient dao, int id) =>
+app.MapGet("/client/get/{id}", async (HttpContext context, IDaoClient dao, int id) =>
 {
     return await dao.GetClientById(id);
 });
@@ -133,14 +133,14 @@ app.MapGet("/order_product/get/{id}", async (HttpContext context, IDaoOrderProdu
 
 
 //check info/summ
-app.MapGet("/check/info/{clientId}/{orderId}", async (HttpContext context, IDaoCheck dao, int clientId, int orderId) =>
+app.MapGet("/check/info/{orderId}", async (HttpContext context, IDaoCheck dao, int orderId) =>
 {
-    return await dao.CheckInfo(clientId, orderId);
+    return await dao.CheckInfo( orderId);
 });
 
-app.MapGet("/check/summ/{clientId}/{orderId}", async (HttpContext context, IDaoCheck dao, int clientId, int orderId) =>
+app.MapGet("/check/summ/{orderId}", async (HttpContext context, IDaoCheck dao, int orderId) =>
 {
-    return await dao.CheckSumm(clientId, orderId);
+    return await dao.CheckSumm(orderId);
 });
 
 app.Run();
