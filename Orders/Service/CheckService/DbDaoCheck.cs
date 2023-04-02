@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Orders.Model;
 using Orders.Model.Entity;
+using System.IO.Pipes;
+
 namespace Orders.Service.CheckService
 {
     public class DbDaoCheck: IDaoCheck
@@ -11,110 +14,25 @@ namespace Orders.Service.CheckService
         {
             this.db = db;
         }
-        public async Task<IResult> CheckInfo(int clientId, int orderId)
+
+        public async Task<IResult> CheckInfo(int orderId)
         {
-            var order = await db.Orders.FirstOrDefaultAsync(order => order.Id == orderId && order.ClientId == clientId);
-            if (order == null)
-            {
-                return Results.NotFound();
-            }
-            var orderProducts = db.OrdersProducts.Where(orderProduct => orderProduct.OrderId == orderId).Include(p => p.Products);
-            if (orderProducts == null)
-            {
-                return Results.NotFound();
-            }
-            var checkInfo = new Dictionary<string, List<string>>();
-
-            var checkProduct = new List<string>();
-
-            int totalProductCount = 0;
-
-            int productCountById = 0;
-
-            var productTuples = new List<Product>();
-
-            var id_products = new List<int>();
-
-            checkProduct.Add($"{order.Description}");
-
-            checkInfo.Add("description", checkProduct);
-
-            checkProduct.Clear();
-
-            foreach (var product in orderProducts)
-            {
-                if (!id_products.Contains(product.Id))
-                {
-                    id_products.Add(product.Id);
-
-                    productCountById = db.OrdersProducts
-                        .Where(orderProduct => orderProduct.OrderId == orderId && orderProduct.ProductId == product.Id).Count();
-                    var name = await db.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
-
-                    checkProduct.Add($"productName: {name}");
-
-                    checkProduct.Add($"productCount: {productCountById}");
-
-                    checkInfo.Add("product", checkProduct);
-                    totalProductCount += productCountById;
-                    checkProduct.Clear();
-                }
-            }
-            checkProduct.Add($"{totalProductCount}");
-            checkInfo.Add("totalProductCount", checkProduct);
-            return Results.Json(checkInfo);
+            //Создать list из продуктов и их количества
+            var products = db.OrdersProducts.Where(op => op.OrderId == orderId).Select(op => new Checks(op.Products, op.ProductCount)).ToList();
+            //Вычислить totalCount, путем суммирования количества каждого из продуктов в заказе
+            var totalCount = products.Select(p => p.Count).Sum();
+            //Отправить List из продуктов и их количества и общее количество
+            return Results.Json(new { products, totalCount });
         }
 
-
-        public async Task<IResult> CheckSumm(int clientId, int orderId)
+        public async Task<IResult> CheckSumm(int orderId)
         {
-            var order = await db.Orders.FirstOrDefaultAsync(order => order.Id == orderId && order.ClientId == clientId);
-            if (order == null)
-            {
-                return Results.NotFound();
-            }
-            var orderProducts = db.OrdersProducts.Where(orderProduct => orderProduct.OrderId == orderId).Include(p => p.Products);
-            if (orderProducts == null)
-            {
-                return Results.NotFound();
-            }
-            var checkInfo = new Dictionary<string, List<string>>();
-
-            var checkProduct = new List<string>();
-
-            int totalProductPrice = 0;
-
-            int productCountById = 0;
-
-            var productTuples = new List<Product>();
-
-            var id_products = new List<int>();
-
-            checkProduct.Add($"{order.Description}");
-
-            checkInfo.Add("description", checkProduct);
-
-            checkProduct.Clear();
-
-            foreach (var product in orderProducts)
-            {
-                if (!id_products.Contains(product.Id))
-                {
-                    id_products.Add(product.Id);
-
-                    var product_item = await db.Products.FirstOrDefaultAsync(p => p.Id == product.Id);
-                    productCountById = db.OrdersProducts
-                        .Where(orderProduct => orderProduct.OrderId == orderId && orderProduct.ProductId == product.Id).Count();
-                    checkProduct.Add($"productName: {product_item.ProductName}");
-                    checkProduct.Add($"productPrice: {product_item.Price}");
-                    checkInfo.Add("product", checkProduct);
-                    totalProductPrice += product_item.Price * productCountById ;
-                    checkProduct.Clear();
-                }
-            }
-            checkProduct.Add($"{totalProductPrice}");
-            checkInfo.Add("totalProductCount", checkProduct);
-            return Results.Json(checkInfo);
+            //Создать list из продуктов и их количества
+            var products = db.OrdersProducts.Where(op => op.OrderId == orderId).Select(op => new Checks(op.Products, op.ProductCount)).ToList();
+            //Вычислить totalPrice, путем суммирования общей цены за каждый продукт
+            var totalPrice = products.Select(p => p.PriceCount).Sum();
+            //Отправить List из продуктов и их количества и общую сумму
+            return Results.Json(new { products, totalPrice });
         }
     }
 }

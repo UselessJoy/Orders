@@ -9,18 +9,17 @@ namespace Orders.Model.Entity
 
         public int ProductId { get; set; }
 
-        [JsonIgnore]
-        public ICollection<Product> Products { get; set; }
+        public int ProductCount { get; set; }
+        public Product Products { get; set; }
 
         public int OrderId { get; set; }
 
-        [JsonIgnore]
-        public ICollection<Order> Orders { get; set; }
+        public Order Orders { get; set; }
 
 
         public override string ToString()
         {
-            return $"{Id} - {ProductId} - {OrderId}";
+            return $"{Id} - {ProductId} - {OrderId} - {ProductCount}";
         }
     }
 }

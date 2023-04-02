@@ -12,7 +12,7 @@ namespace Orders.Model.Entity
 
         public int Price { get; set; }
 
-        public OrderProduct? OrderProduct { get; set; }
+        public ICollection<OrderProduct>? OrderProduct { get; set; }
         public Product()
         {
             ProductName = "";
